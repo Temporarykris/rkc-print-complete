@@ -1,0 +1,42 @@
+package com.rkcprint;
+
+import android.content.Intent;
+import android.content.SharedPreferences;
+import android.os.Bundle;
+import android.provider.Settings;
+import android.view.View;
+import android.widget.EditText;
+import android.widget.Toast;
+import androidx.appcompat.app.AppCompatActivity;
+
+public class ActivationActivity extends AppCompatActivity {
+
+    private static final String VALID_KEY = "RKC123"; // You can externalize this later
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_activation);
+
+        findViewById(R.id.activateBtn).setOnClickListener(v -> {
+            EditText keyField = findViewById(R.id.activationKey);
+            String enteredKey = keyField.getText().toString().trim();
+            String deviceId = Settings.Secure.getString(getContentResolver(), Settings.Secure.ANDROID_ID);
+
+            if (enteredKey.equals(VALID_KEY)) {
+                SharedPreferences prefs = getSharedPreferences("RKC_PREFS", MODE_PRIVATE);
+                prefs.edit()
+                        .putBoolean("is_activated", true)
+                        .putString("device_id", deviceId)
+                        .putString("activation_key", enteredKey)
+                        .apply();
+
+                // TODO: Send deviceId and key to admin Excel (Google Sheets/Firebase)
+                startActivity(new Intent(this, MainActivity.class));
+                finish();
+            } else {
+                Toast.makeText(this, "Invalid Activation Key", Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+}
